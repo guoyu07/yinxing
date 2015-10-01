@@ -1,0 +1,14 @@
+{
+    "name": "allovince/yinxing",
+    "description": "A uniform movie API for douban and dmm",
+    "authors": [
+        {
+            "name": "AlloVince"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.0",
+        "evaengine/evaengine": "1.0.x-dev",
+        "guzzlehttp/guzzle": "^6"
+    }
+}
