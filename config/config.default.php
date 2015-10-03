@@ -121,7 +121,7 @@ return [
         'master' => [
             'adapter' => 'mysql',
             'host' => 'localhost',
-            'dbname' => 'eva',
+            'dbname' => 'yinxing',
             'username' => 'root',
             'password' => '',
             'charset' => 'utf8',
@@ -131,7 +131,7 @@ return [
             'slave1' => [
                 'adapter' => 'mysql',
                 'host' => 'localhost',
-                'dbname' => 'eva',
+                'dbname' => 'yinxing',
                 'username' => 'root',
                 'password' => '',
                 'charset' => 'utf8',
