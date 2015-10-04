@@ -12,11 +12,15 @@ namespace Eva\EvaMovie\Tasks;
 use Eva\EvaEngine\Exception\InvalidArgumentException;
 use Eva\EvaEngine\Exception\RuntimeException;
 use Eva\EvaEngine\Tasks\TaskBase;
+use Eva\EvaMovie\Entities\Makers;
 use Eva\EvaMovie\Entities\Movies;
+use Eva\EvaMovie\Entities\Series;
+use Eva\EvaMovie\Entities\Staffs;
+use Eva\EvaMovie\Utils\KanaToRoma;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\TransferException;
-use GuzzleHttp\Psr7\Request;
+use JpnForPhp\Transliterator\Romaji;
 
 class CrawlDmmTask extends TaskBase
 {
@@ -24,16 +28,19 @@ class CrawlDmmTask extends TaskBase
 
     protected $perPage = 100;
 
-    protected $maxRetry = 10;
+    protected $maxRetry = 30;
 
     protected $maxPage = 0;
 
     protected $client;
 
+    protected $romaji;
+
     protected $config;
 
     private static $dmmMovieId;
     private static $yinxingMovieId;
+    private $lastDbMessage;
 
     /**
      * Args:
@@ -128,13 +135,16 @@ class CrawlDmmTask extends TaskBase
                 $this->output->writelnSuccess(sprintf("Movie %s saved success as item %d", self::$dmmMovieId,
                     self::$yinxingMovieId));
             } else {
-                $this->output->writelnWarning(sprintf("Movie %s save failed from item %d", self::$dmmMovieId,
-                    self::$yinxingMovieId));
+                $this->output->writelnWarning(sprintf("Movie %s save failed from item %d, reason: %s",
+                    self::$dmmMovieId,
+                    self::$yinxingMovieId, implode('|', $this->lastDbMessage)));
 
             }
         }
 
-        return $skipTimes === ($this->perPage - 1);
+        $this->output->writelnComment(sprintf("Item list save finished, skiped times: %d, perPage: %d",
+            $skipTimes, $this->perPage));
+        return $skipTimes !== ($this->perPage - 1);
     }
 
     protected function checkItemExist(\SimpleXMLElement $item)
@@ -156,12 +166,121 @@ class CrawlDmmTask extends TaskBase
         $movie->year = $item->date;
         $movie->images = implode(',', (array)$item->imageURL);
         $movie->previews = implode(',', (array)$item->sampleImageURL->sample_s->image);
-        $tags = [];
-        foreach ($item->iteminfo->keyword as $keyword) {
-            $tags[] = $keyword->name;
+
+        if (!empty($item->iteminfo->keyword)) {
+            $tags = [];
+            foreach ($item->iteminfo->keyword as $keyword) {
+                if (empty($keyword->name)) {
+                    continue;
+                }
+                $tags[] = $keyword->name;
+            }
+            $movie->tags = implode(',', $tags);
         }
-        $movie->tags = implode(',', $tags);
-        return $movie->save();
+
+        if (!empty($item->iteminfo->series->id)) {
+            $series = new Series();
+            $series->id = self::dmmOtherIDConvert($item->iteminfo->series->id);
+            $series->name = $item->iteminfo->series->name;
+            $movie->series = $series;
+        }
+
+        if (!empty($item->iteminfo->maker->id)) {
+            $maker = new Makers();
+            $maker->id = self::dmmOtherIDConvert($item->iteminfo->maker->id);
+            $maker->name = $item->iteminfo->maker->name;
+            $movie->maker = $maker;
+        }
+
+        if (!empty($item->iteminfo->actress)) {
+            $casts = $this->getStaffs($item->iteminfo->actress);
+            $casts = $this->processActress($casts);
+            if ($casts) {
+                $movie->casts = $casts;
+            }
+        }
+
+
+        /*
+        //Not correct, id convert need fix
+        if (!empty($item->iteminfo->director)) {
+            $directors = $this->getStaffs($item->iteminfo->director);
+            $directors = $this->processDirectors($directors);
+            if ($directors) {
+                $movie->directors = $directors;
+            }
+        }
+        */
+
+        $res = $movie->save();
+        if (!$res) {
+            $this->lastDbMessage = $movie->getMessages();
+        }
+        return $res;
+    }
+
+    private function processActress($casts)
+    {
+        foreach ($casts as $key => $cast) {
+            $cast->gender = 'female';
+            $casts[$key] = $cast;
+        }
+        return $casts;
+    }
+
+    private function processDirectors($directors)
+    {
+        foreach ($directors as $key => $director) {
+            $director->isDirector = 1;
+            $directors[$key] = $director;
+        }
+        return $directors;
+    }
+
+    private function getStaffs(array $people)
+    {
+        $staffs = [];
+        foreach ($people as $key => $person) {
+            if (!is_numeric($person->id)) {
+                continue;
+            }
+            $staff = new Staffs();
+            $staff->id = self::dmmOtherIDConvert($person->id);
+            list($name, $aka) = $this->parseNameAndAka($person->name);
+            $staff->name = $name;
+            $staff->aka = implode(',', $aka) ?: null;
+            $nameRuby = $this->findNameRuby($person->id, $people);
+            if ($nameRuby) {
+                list($name, $aka) = $this->parseNameAndAka($nameRuby);
+                $staff->nameRuby = $name;
+                $staff->nameEn = $this->getRomajiConvertor()->transliterate($name);
+                $staff->akaRuby = implode(',', $aka);
+            }
+            $staffs[] = $staff;
+        }
+        return $staffs;
+    }
+
+    public function parseNameAndAka($name)
+    {
+        //array_filter to remove empty strings
+        $nameArray = array_filter(preg_split("/（|、|）/", $name));
+
+        if (count($nameArray) <= 1) {
+            return [$name, []];
+        }
+
+        return [array_shift($nameArray), $nameArray];
+    }
+
+    private function findNameRuby($id, array $people)
+    {
+        foreach ($people as $key => $person) {
+            if ($person->id == $id . '_ruby') {
+                return $person->name;
+            }
+        }
+        return null;
     }
 
     public static function dmmMovieIDToYinxingID($dmmId)
@@ -170,12 +289,7 @@ class CrawlDmmTask extends TaskBase
         return self::$yinxingMovieId = 2000000000000 + crc32($dmmId);
     }
 
-    public static function dmmStaffIDToYinxingID($staffId)
-    {
-        return self::dmmOtherIDConvert($staffId);
-    }
-
-    private static function dmmOtherIDConvert($dmmId)
+    public static function dmmOtherIDConvert($dmmId)
     {
         if (!is_numeric($dmmId)) {
             return false;
@@ -187,13 +301,18 @@ class CrawlDmmTask extends TaskBase
     {
         return $this->client ?: $this->client = new Client([
             'debug' => 1,
-            'connect_timeout' => 2
+            'connect_timeout' => 3
         ]);
     }
 
     protected function getConfig()
     {
         return $this->config ?: $this->config = $this->getDI()->get("config");
+    }
+
+    public function getRomajiConvertor()
+    {
+        return $this->romaji ?: $this->romaji = new Romaji('nihon');
     }
 
     public function dmmApiCall(array $params = [])

@@ -50,6 +50,18 @@ class Makers extends BaseEntity
      */
     public $summary;
 
+    /**
+     *
+     * @SWG\Property(
+     *   name="logo",
+     *   type="string",
+     *   description="制作商Logo"
+     * )
+     *
+     * @var string
+     */
+    public $logo;
+
 
     /**
      * Database table name (Not including prefix)

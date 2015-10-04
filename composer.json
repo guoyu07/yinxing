@@ -8,6 +8,7 @@
     ],
     "require": {
         "php": ">=5.6.0",
+        "mbilbille/jpnforphp": "~0.6",
         "evaengine/evaengine": "1.0.x-dev",
         "guzzlehttp/guzzle": "^6"
     }

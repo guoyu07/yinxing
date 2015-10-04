@@ -281,18 +281,6 @@ class Movies extends BaseEntity
     /**
      *
      * @SWG\Property(
-     *   name="episodesCount",
-     *   type="integer",
-     *   description="当前季的集数"
-     * )
-     *
-     * @var integer
-     */
-    public $episodesCount;
-
-    /**
-     *
-     * @SWG\Property(
      *   name="tags",
      *   type="string",
      *   description="Array 标签"
@@ -301,6 +289,18 @@ class Movies extends BaseEntity
      * @var string
      */
     public $tags;
+
+    /**
+     *
+     * @SWG\Property(
+     *   name="episodesCount",
+     *   type="integer",
+     *   description="当前季的集数"
+     * )
+     *
+     * @var integer
+     */
+    public $episodesCount;
 
     /**
      *
@@ -325,42 +325,6 @@ class Movies extends BaseEntity
      * @var integer
      */
     public $seriesId;
-
-    /**
-     *
-     * @SWG\Property(
-     *   name="directors",
-     *   type="string",
-     *   description="Array 导演ID"
-     * )
-     *
-     * @var string
-     */
-    public $directors;
-
-    /**
-     *
-     * @SWG\Property(
-     *   name="writers",
-     *   type="string",
-     *   description="Array 编剧ID"
-     * )
-     *
-     * @var string
-     */
-    public $writers;
-
-    /**
-     *
-     * @SWG\Property(
-     *   name="casts",
-     *   type="string",
-     *   description="Array 主演ID"
-     * )
-     *
-     * @var string
-     */
-    public $casts;
 
     /**
      *
@@ -392,4 +356,62 @@ class Movies extends BaseEntity
      * @var string
      */
     protected $tableName = 'movie_movies';
+
+
+    public function initialize()
+    {
+        $this->belongsTo(
+            'makerId',
+            'Eva\EvaMovie\Entities\Makers',
+            'id',
+            array(
+                'alias' => 'maker'
+            )
+        );
+
+        $this->belongsTo(
+            'seriesId',
+            'Eva\EvaMovie\Entities\SeriesId',
+            'id',
+            array(
+                'alias' => 'series'
+            )
+        );
+
+        $this->hasMany(
+            'id',
+            'Eva\EvaMovie\Entities\MoviesCasts',
+            'movieId',
+            array('alias' => 'moviesCasts')
+        );
+
+        $this->hasManyToMany(
+            'id',
+            'Eva\EvaMovie\Entities\MoviesCasts',
+            'movieId',
+            'staffId',
+            'Eva\EvaMovie\Entities\Staffs',
+            'id',
+            array('alias' => 'casts')
+        );
+
+        $this->hasMany(
+            'id',
+            'Eva\EvaMovie\Entities\MoviesDirectors',
+            'movieId',
+            array('alias' => 'moviesDirectors')
+        );
+
+        $this->hasManyToMany(
+            'id',
+            'Eva\EvaMovie\Entities\MoviesDirectors',
+            'movieId',
+            'staffId',
+            'Eva\EvaMovie\Entities\Staffs',
+            'id',
+            array('alias' => 'directors')
+        );
+        parent::initialize();
+    }
+
 }

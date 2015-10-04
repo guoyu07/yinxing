@@ -4,7 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "7f806c5033e4e3d384446062a2a8e483",
+    "hash": "f6c4a03903599dabaaa9e0a0ba161c5b",
+    "content-hash": "595dec777b59e4d7095f98b25a235894",
     "packages": [
         {
             "name": "duncan3dc/fork-helper",
@@ -95,12 +96,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/EvaEngine/EvaEngine.git",
-                "reference": "733714fe72f19414c7d02edf7268c359f0a17d6d"
+                "reference": "e1a859885c66c37cbe0151d6e7ea60dfad77410d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/EvaEngine/EvaEngine/zipball/733714fe72f19414c7d02edf7268c359f0a17d6d",
-                "reference": "733714fe72f19414c7d02edf7268c359f0a17d6d",
+                "url": "https://api.github.com/repos/EvaEngine/EvaEngine/zipball/e1a859885c66c37cbe0151d6e7ea60dfad77410d",
+                "reference": "e1a859885c66c37cbe0151d6e7ea60dfad77410d",
                 "shasum": ""
             },
             "require": {
@@ -148,7 +149,7 @@
                 }
             ],
             "description": "A development engine based on Phalcon Framework",
-            "time": "2015-10-01 12:28:48"
+            "time": "2015-10-03 15:59:24"
         },
         {
             "name": "guzzle/guzzle",
@@ -496,6 +497,64 @@
                 "media"
             ],
             "time": "2015-05-26 08:25:40"
+        },
+        {
+            "name": "mbilbille/jpnforphp",
+            "version": "0.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mbilbille/jpnforphp.git",
+                "reference": "64f902b162c8b8ed2a04a270a9a223d6a3ae7cf9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mbilbille/jpnforphp/zipball/64f902b162c8b8ed2a04a270a9a223d6a3ae7cf9",
+                "reference": "64f902b162c8b8ed2a04a270a9a223d6a3ae7cf9",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0",
+                "symfony/yaml": ">=2.3"
+            },
+            "replace": {
+                "jpnforphp/analyzer": "self.version",
+                "jpnforphp/converter": "self.version",
+                "jpnforphp/helper": "self.version",
+                "jpnforphp/inflector": "self.version",
+                "jpnforphp/transliterator": "self.version"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "3.7.*"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.7-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "JpnForPhp": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Matthieu Bilbille",
+                    "email": "matthieu.bilbille@gmail.com",
+                    "homepage": "https://github.com/mbilbille"
+                }
+            ],
+            "description": "A tiny PHP lib which provides nice functions & wrappers to interact with Japanese language.",
+            "homepage": "http://mbilbille.github.com/jpnforphp/",
+            "keywords": [
+                "japanese",
+                "library"
+            ],
+            "time": "2015-08-18 15:49:44"
         },
         {
             "name": "nikic/php-parser",
@@ -957,6 +1016,55 @@
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
             "time": "2015-09-19 19:59:23"
+        },
+        {
+            "name": "symfony/yaml",
+            "version": "v2.7.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/yaml.git",
+                "reference": "31cb2ad0155c95b88ee55fe12bc7ff92232c1770"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/31cb2ad0155c95b88ee55fe12bc7ff92232c1770",
+                "reference": "31cb2ad0155c95b88ee55fe12bc7ff92232c1770",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9"
+            },
+            "require-dev": {
+                "symfony/phpunit-bridge": "~2.7"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.7-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Yaml\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Yaml Component",
+            "homepage": "https://symfony.com",
+            "time": "2015-09-14 14:14:09"
         }
     ],
     "packages-dev": [],

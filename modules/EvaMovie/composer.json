@@ -11,6 +11,7 @@
         }
     ],
     "require": {
+        "mbilbille/jpnforphp": "~0.6",
         "evaengine/eva-common": "dev-master"
     },
     "autoload": {

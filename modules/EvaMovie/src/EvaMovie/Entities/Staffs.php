@@ -18,11 +18,11 @@ class Staffs extends BaseEntity
      *
      * @SWG\Property(
      *   name="id",
-     *   type="long",
+     *   type="integer",
      *   description=""
      * )
      *
-     * @var long
+     * @var integer
      */
     public $id;
 
@@ -37,6 +37,18 @@ class Staffs extends BaseEntity
      * @var string
      */
     public $name;
+
+    /**
+     *
+     * @SWG\Property(
+     *   name="nameRuby",
+     *   type="string",
+     *   description="姓名标注"
+     * )
+     *
+     * @var string
+     */
+    public $nameRuby;
 
     /**
      *
@@ -67,7 +79,7 @@ class Staffs extends BaseEntity
      * @SWG\Property(
      *   name="avatars",
      *   type="string",
-     *   description="Array 别名"
+     *   description="Array 头像"
      * )
      *
      * @var string
@@ -97,6 +109,18 @@ class Staffs extends BaseEntity
      * @var string
      */
     public $aka;
+
+    /**
+     *
+     * @SWG\Property(
+     *   name="akaRuby",
+     *   type="string",
+     *   description="Array 别名标注"
+     * )
+     *
+     * @var string
+     */
+    public $akaRuby;
 
     /**
      *
@@ -185,6 +209,42 @@ class Staffs extends BaseEntity
     /**
      *
      * @SWG\Property(
+     *   name="threeSizes",
+     *   type="string",
+     *   description="三围"
+     * )
+     *
+     * @var string
+     */
+    public $threeSizes;
+
+    /**
+     *
+     * @SWG\Property(
+     *   name="cup",
+     *   type="string",
+     *   description="罩杯"
+     * )
+     *
+     * @var string
+     */
+    public $cup;
+
+    /**
+     *
+     * @SWG\Property(
+     *   name="hobby",
+     *   type="string",
+     *   description="爱好"
+     * )
+     *
+     * @var string
+     */
+    public $hobby;
+
+    /**
+     *
+     * @SWG\Property(
      *   name="isDirector",
      *   type="integer",
      *   description="导演身份"
@@ -192,7 +252,7 @@ class Staffs extends BaseEntity
      *
      * @var integer
      */
-    public $isDirector;
+    public $isDirector = 0;
 
     /**
      *
@@ -204,7 +264,7 @@ class Staffs extends BaseEntity
      *
      * @var integer
      */
-    public $isWriter;
+    public $isWriter = 0;
 
 
     /**
