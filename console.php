@@ -30,7 +30,7 @@ $appName = array_shift($argv);
 |
 |
 */
-$engine = new \Eva\EvaEngine\Engine(__DIR__ . '/', $appName ? $appName : 'evaengine', 'cli');
+$engine = new \Eva\EvaEngine\Engine(__DIR__ . '/', $appName ?: 'evaengine', 'cli');
 $engine
     ->loadModules(include __DIR__ . '/config/modules.' . $engine->getAppName() . '.php')
     ->bootstrap();

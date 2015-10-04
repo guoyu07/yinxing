@@ -16,7 +16,6 @@ use Eva\EvaMovie\Entities\Makers;
 use Eva\EvaMovie\Entities\Movies;
 use Eva\EvaMovie\Entities\Series;
 use Eva\EvaMovie\Entities\Staffs;
-use Eva\EvaMovie\Utils\KanaToRoma;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\TransferException;
@@ -341,8 +340,8 @@ class CrawlDmmTask extends TaskBase
                         'hits' => $params['perPage'],
                         'keyword' => $params['keyword']
                     ], [
-                        'api_id' => $this->getConfig()->movieApi->dmm->apiId,
-                        'affiliate_id' => $this->getConfig()->movieApi->dmm->affiliateId,
+                        'api_id' => $this->getConfig()->movie->crawl->dmm->apiId,
+                        'affiliate_id' => $this->getConfig()->movie->crawl->dmm->affiliateId,
                     ])
             ]
         );

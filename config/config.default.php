@@ -116,6 +116,13 @@ return [
         'adapter' => 'File',
         'path' => __DIR__ . '/../logs/',
     ],
+    'modelsMetadata' => array(
+        'enable' => true,
+        'adapter' => 'files',
+        'options' => array(
+            'metaDataDir' => __DIR__ . '/../cache/schema/'
+        ),
+    ),
     'dbAdapter' => [
         'prefix' => 'eva_',
         'master' => [
