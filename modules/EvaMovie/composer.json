@@ -12,6 +12,8 @@
     ],
     "require": {
         "mbilbille/jpnforphp": "~0.6",
+        "querypath/QueryPath": ">=3.0.0",
+        "symfony/dom-crawler": ">=2.7.*",
         "evaengine/eva-common": "dev-master"
     },
     "autoload": {

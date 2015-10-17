@@ -9,6 +9,9 @@
     "require": {
         "php": ">=5.6.0",
         "mbilbille/jpnforphp": "~0.6",
+        "querypath/QueryPath": ">=3.0.0",
+        "symfony/dom-crawler": ">=2.7.0",
+        "symfony/css-selector": "*",
         "evaengine/evaengine": "1.0.x-dev",
         "guzzlehttp/guzzle": "^6"
     }

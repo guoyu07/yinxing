@@ -8,7 +8,6 @@
 
 namespace Eva\EvaMovie\Tasks;
 
-
 use Eva\EvaEngine\Exception\InvalidArgumentException;
 use Eva\EvaEngine\Exception\RuntimeException;
 use Eva\EvaEngine\Tasks\TaskBase;
@@ -60,8 +59,11 @@ class CrawlDmmTask extends TaskBase
         //TODO: add write log to save last run time & failed
         if (!$this->dmmHasUpdated()) {
             //TODO: add --force arg
-            return $this->output->writelnSuccess(sprintf("Crawl stopped by latest movie %d (%s) already in database",
-                self::$yinxingMovieId, self::$dmmMovieId));
+            return $this->output->writelnSuccess(sprintf(
+                "Crawl stopped by latest movie %d (%s) already in database",
+                self::$yinxingMovieId,
+                self::$dmmMovieId
+            ));
         }
 
         $retry = 0;
@@ -325,26 +327,23 @@ class CrawlDmmTask extends TaskBase
             'sort' => 'date',
         ], $params);
         $offset = ($params['page'] - 1) * $params['perPage'] + 1;
-        return $this->getClient()->get('http://affiliate-api.dmm.com/',
-            [
-                'query' =>
-                    array_merge([
-                        'api_id' => '',
-                        'affiliate_id' => '',
-                        'operation' => 'ItemList',
-                        'version' => '2.0',
-                        'timestamp' => date('Y-m-d H:i:s'),
-                        'site' => $params['site'],
-                        'service' => $params['service'],
-                        'offset' => $offset,
-                        'hits' => $params['perPage'],
-                        'keyword' => $params['keyword']
-                    ], [
-                        'api_id' => $this->getConfig()->movie->crawl->dmm->apiId,
-                        'affiliate_id' => $this->getConfig()->movie->crawl->dmm->affiliateId,
-                    ])
-            ]
-        );
+        return $this->getClient()->get('http://affiliate-api.dmm.com/', [
+            'query' => array_merge([
+                'api_id' => '',
+                'affiliate_id' => '',
+                'operation' => 'ItemList',
+                'version' => '2.0',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'site' => $params['site'],
+                'service' => $params['service'],
+                'offset' => $offset,
+                'hits' => $params['perPage'],
+                'keyword' => $params['keyword']
+            ], [
+                'api_id' => $this->getConfig()->movie->crawl->dmm->apiId,
+                'affiliate_id' => $this->getConfig()->movie->crawl->dmm->affiliateId,
+            ])
+        ]);
     }
 
     protected function crawlDmm()
