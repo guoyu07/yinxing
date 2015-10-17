@@ -29,7 +29,18 @@ class DmmSpider(CrawlSpider):
         Rule(LinkExtractor(allow='digital/videoa/-/list/=/article=actress/id=\d+/sort=ranking/(page=\d+/)*', ),
              follow=True,
              callback='parse_movie_id_from_list'),
+        # Movie detail page
+        Rule(LinkExtractor(allow='detail/=/cid=(\w+)/$', ),
+             follow=False,
+             callback='download_movie_detail'),
     )
+
+    def download_movie_detail(self, response):
+        dmm_id = response.url.split('/')[-2].replace('cid=', '')
+        self.logger.debug("Download xml %s" % response.url)
+        with open(self.get_dl_html_file_path(dmm_id), 'wb') as f:
+            f.write(response.body)
+        return [YinxingDmmItem()]
 
     def get_detail_xml_url(self, dmm_id):
         params = {
@@ -46,15 +57,18 @@ class DmmSpider(CrawlSpider):
         }
         return urlparse.urlunparse(('http', 'affiliate-api.dmm.com', '/', '', urllib.urlencode(params), ''))
 
-    def get_dl_file_path(self, dmm_id):
-        return './dl/%s.xml' % self.dmm_id_to_yinxing_id(dmm_id)
+    def get_dl_html_file_path(self, dmm_id):
+        return './dl/html_all/%s.html' % self.dmm_id_to_yinxing_id(dmm_id)
+
+    def get_dl_xml_file_path(self, dmm_id):
+        return './dl/xml_all/%s.xml' % self.dmm_id_to_yinxing_id(dmm_id)
 
     def dmm_id_to_yinxing_id(self, dmm_id):
         return dmm_id
 
     def download_detail_xml(self, response):
         self.logger.debug("Download xml %s" % response.url)
-        with open(self.get_dl_file_path(response.meta['dmm_id']), 'wb') as f:
+        with open(self.get_dl_xml_file_path(response.meta['dmm_id']), 'wb') as f:
             f.write(response.body)
         return [YinxingDmmItem()]
 
@@ -70,7 +84,7 @@ class DmmSpider(CrawlSpider):
             self.logger.debug("Found dmm id %s" % dmm_id)
             url = self.get_detail_xml_url(dmm_id)
             self.logger.debug("Detail url : %s" % url)
-            if os.path.exists(self.get_dl_file_path(dmm_id)):
-                self.logger.info("File %s already exists, download skipped" % self.get_dl_file_path(dmm_id))
+            if os.path.exists(self.get_dl_xml_file_path(dmm_id)):
+                self.logger.info("File %s already exists, download skipped" % self.get_dl_xml_file_path(dmm_id))
                 continue
             yield Request(url, callback=self.download_detail_xml, meta={'dmm_id': dmm_id})

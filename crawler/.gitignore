@@ -55,3 +55,5 @@ docs/_build/
 *.swp
 
 yinxing_dmm/settings.py
+.scrapy/*
+.idea/*

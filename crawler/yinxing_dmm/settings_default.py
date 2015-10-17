@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+
 BOT_NAME = 'yinxing_dmm'
 
 SPIDER_MODULES = ['yinxing_dmm.spiders']
@@ -39,9 +41,9 @@ DOWNLOAD_DELAY = 0
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'yinxing_dmm.middlewares.MyCustomDownloaderMiddleware': 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 543
+}
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
@@ -68,11 +70,11 @@ DOWNLOAD_DELAY = 0
 
 # Enable and configure HTTP caching (disabled by default)
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
-# HTTPCACHE_ENABLED=True
-# HTTPCACHE_EXPIRATION_SECS=0
-# HTTPCACHE_DIR='httpcache'
-# HTTPCACHE_IGNORE_HTTP_CODES=[]
-# HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
+HTTPCACHE_ENABLED = True
+HTTPCACHE_EXPIRATION_SECS = 0
+HTTPCACHE_DIR = os.path.dirname(os.path.abspath(__file__)) + '/../httpcache'
+HTTPCACHE_IGNORE_HTTP_CODES = []
+HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 YINXING_DMM_APP_ID = ""
 YINXING_DMM_AFFILIATE_ID = ""
