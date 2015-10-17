@@ -1,0 +1,8 @@
+# -*- coding: utf-8 -*-
+try:
+    from settings_default import *
+except ImportError, e:
+    pass
+
+YINXING_DMM_APP_ID = ""
+YINXING_DMM_AFFILIATE_ID = ""

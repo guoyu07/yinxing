@@ -24,10 +24,16 @@ class ImportDmmXmlTask extends TaskBase
         if (PHP_INT_SIZE === 4) {
             return $this->output->writelnError("Require PHP 64bit to run this script by CRC32 issue");
         }
-        $this->output->writelnInfo("Import started.");
 
         $fileCount = 0;
-        $root = '/opt/htdocs/yinxing_dmm/dl';
+        $root = __DIR__ . '/../../../../../crawler/dl';
+        $path = realpath($root);
+        $this->output->writelnInfo(sprintf("Import started from path %s.", $path));
+
+        if (!is_readable($path)) {
+            $this->output->writelnError(sprintf("Root path %s not readable", $path));
+        }
+
         $files = new \GlobIterator($root . '/*.xml');
         /** @var \SplFileInfo $file */
         foreach ($files as $file) {
