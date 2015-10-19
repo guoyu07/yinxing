@@ -78,3 +78,4 @@ HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 YINXING_DMM_APP_ID = ""
 YINXING_DMM_AFFILIATE_ID = ""
+YINXING_DMM_DL_ROOT = os.path.dirname(os.path.abspath(__file__)) + '/../dl'

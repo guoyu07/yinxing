@@ -32,7 +32,7 @@ class DmmSpider(CrawlSpider):
         # List pages
         Rule(LinkExtractor(
             allow='digital/videoa/-/list/=/article=(actress|series|maker|keyword)/id=\d+/(page=\d+/)*$', ),
-             follow=True, ),
+            follow=True, ),
         Rule(LinkExtractor(allow='detail/=/cid=(\w+)/$', ),
              follow=True,
              callback='download_movie_detail'),
@@ -66,11 +66,12 @@ class DmmSpider(CrawlSpider):
         return urlparse.urlunparse(('http', 'affiliate-api.dmm.com', '/', '', urllib.urlencode(params), ''))
 
     def get_dl_html_file_path(self, dmm_id):
-        return './dl/html_all/%s.html' % self.dmm_id_to_yinxing_id(dmm_id)
+        return '%s/html_all/%s.html' % (settings['YINXING_DMM_DL_ROOT'], dmm_id)
 
     def get_dl_xml_file_path(self, dmm_id):
-        return './dl/xml_all/%s.xml' % self.dmm_id_to_yinxing_id(dmm_id)
+        return '%s/xml/%s.xml' % (settings['YINXING_DMM_DL_ROOT'], dmm_id)
 
+    '''
     def dmm_id_to_yinxing_id(self, dmm_id):
         return dmm_id
 
@@ -96,3 +97,4 @@ class DmmSpider(CrawlSpider):
                 self.logger.info("File %s already exists, download skipped" % self.get_dl_xml_file_path(dmm_id))
                 continue
             yield Request(url, callback=self.download_detail_xml, meta={'dmm_id': dmm_id})
+    '''
