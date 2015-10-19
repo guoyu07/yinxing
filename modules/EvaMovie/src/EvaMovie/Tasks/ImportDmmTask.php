@@ -44,7 +44,7 @@ class ImportDmmTask extends TaskBase
 
         $fileCount = 0;
         $root = '/opt/htdocs/yinxing/modules/EvaMovie/tests/EvaMovieTests';
-        $files = new \GlobIterator($root . '/*.html');
+        $files = new \GlobIterator($root . '/_html/mird00143.html');
         /** @var \SplFileInfo $file */
         foreach ($files as $file) {
             $this->importSingleMovie($file);
@@ -61,25 +61,36 @@ class ImportDmmTask extends TaskBase
         }
         $this->output->writelnInfo(sprintf("Importing %s ...", $source->getRealPath()));
 
-        $domCrawler = new Crawler();
         $file = $source->openFile();
-        $domCrawler->addContent($file->fread($file->getSize()));
+        /** @var Movies $movie */
+        $movie = $this->getMovie($file->fread($file->getSize()));
+        var_dump($movie->toArray());
 
-        $dmmId = $domCrawler->filter("#sample-video > a")->eq(0)->attr("id");
-        if (!$dmmId) {
+        if (!$movie) {
             return $this->output->writelnError(sprintf("Not found dmm id", $source->getFilename()));
         }
 
-        $this->currentDmmId = $dmmId;
+        $this->currentDmmId = $movie->banngo;
 
+
+    }
+
+    public function getMovie($html)
+    {
+        $domCrawler = new Crawler();
         $movie = new Movies();
+        $domCrawler->addContent($html);
+        $dmmId = $domCrawler->filter("#sample-video > a")->eq(0)->attr("id");
+        if (!$dmmId) {
+            return;
+        }
+
         $movie->id = CrawlDmmTask::dmmMovieIDToYinxingID($dmmId);
         $movie->title = $domCrawler->filter(".page-detail #title")->text();
-        $imageLarge = $domCrawler->filter("#sample-video > a")->eq(0)->attr("href");
         $detailTable = $domCrawler->filter(".page-detail table.mg-b20");
         $movie->banngo = $dmmId;
         $movie->subBanngo = $dmmId;
-        $movie->alt = '';
+        $movie->alt = "http://www.dmm.co.jp/digital/videoa/-/detail/=/cid=$dmmId/";
         $movie->subtype = '';
 
         $detailQuery = $this->getDetailQuery('商品発売日：', $dmmId, $detailTable);
@@ -87,8 +98,40 @@ class ImportDmmTask extends TaskBase
             $movie->pubdate = str_replace('/', '-', trim($detailQuery->text(), "\n "));
             $movie->year = substr($movie->pubdate, 0, 4);
         }
-        $movie->images = $imageLarge;
-        $movie->previews = '';
+
+        $detailQuery = $this->getDetailQuery('収録時間：', $dmmId, $detailTable);
+        if (count($detailQuery) > 0 && preg_match('/(\d+)分/', $detailQuery->text(), $matches)) {
+            $movie->durations = $matches[1];
+        }
+
+
+        $detailQuery = $domCrawler->filter(".page-detail .mg-b20.lh4");
+        if (count($detailQuery) > 0) {
+            foreach ($detailQuery->children() as $childNode) {
+                $childNode->parentNode->removeChild($childNode);
+            }
+            $summary = trim($detailQuery->text());
+            $movie->summary = $summary ?: null;
+        }
+
+
+        $detailQuery = $domCrawler->filter("#sample-video > a");
+        if (count($detailQuery) > 0) {
+            $image = $detailQuery->first()->attr('href');
+            $images = [str_replace('pl.', 'pt.', $image), str_replace('pl.', 'ps.', $image), $image];
+            $movie->images = implode(',', $images);
+        }
+
+        $detailQuery = $domCrawler->filter("#sample-image-block img");
+        if (count($detailQuery) > 0) {
+            $previews = [];
+            /** @var \DOMElement $img */
+            foreach ($detailQuery as $img) {
+                $previews[] = $img->getAttribute('src');
+            }
+            $movie->previews = implode(',', $previews);
+        }
+
         $detailQuery = $this->getDetailQuery('シリーズ：', $dmmId, $detailTable)->filter('a');
         if (count($detailQuery) > 0) {
             $series = new Series();
@@ -99,6 +142,7 @@ class ImportDmmTask extends TaskBase
                 $movie->series = $series;
             }
         }
+
 
         $detailQuery = $this->getDetailQuery('メーカー：', $dmmId, $detailTable);
         if (count($detailQuery) > 0) {
@@ -116,9 +160,16 @@ class ImportDmmTask extends TaskBase
             $movie->casts = $casts;
         }
 
+        $detailQuery = $this->getDetailQuery('ジャンル：', $dmmId, $detailTable)->filter('a');
+        if (count($detailQuery) > 0) {
+            $tags = [];
+            $detailQuery->each(function (Crawler $link, $i) use (&$tags) {
+                $tags[] = trim($link->text());
+            });
+            $movie->tags = $tags;
+        }
 
-        var_dump($movie->toArray());
-        exit;
+        return $movie;
     }
 
     private function getCasts(Crawler $links)

@@ -371,7 +371,7 @@ class Movies extends BaseEntity
 
         $this->belongsTo(
             'seriesId',
-            'Eva\EvaMovie\Entities\SeriesId',
+            'Eva\EvaMovie\Entities\Series',
             'id',
             array(
                 'alias' => 'series'

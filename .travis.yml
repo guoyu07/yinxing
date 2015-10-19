@@ -1,0 +1,22 @@
+language: php
+
+env:
+  - DB=mysql
+
+php:
+  - 5.5
+  - 5.6
+
+before_script:
+  - git clone -b 2.0.x git://github.com/phalcon/cphalcon.git --depth=1 && cd cphalcon/build/safe && phpize && ./configure --enable-phalcon && sudo make install
+  - cd ../../../ && phpenv config-add ./tests/phalcon.ini
+  - composer self-update
+  - composer install --dev --prefer-source
+  - phpenv rehash
+  - if [[ "$DB" == "mysql" ]]; then mysql -e "create database IF NOT EXISTS yinxing;" -uroot; fi
+
+script:
+  phpunit -v
+
+after_script:
+  - ./vendor/bin/coveralls -v
