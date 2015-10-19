@@ -43,7 +43,7 @@ class ImportDmmTask extends TaskBase
         $this->output->writelnInfo("Importer started.");
 
         $fileCount = 0;
-        $root = '/opt/htdocs/yinxing_dmm/dl';
+        $root = '/opt/htdocs/yinxing/modules/EvaMovie/tests/EvaMovieTests';
         $files = new \GlobIterator($root . '/*.html');
         /** @var \SplFileInfo $file */
         foreach ($files as $file) {
@@ -82,16 +82,17 @@ class ImportDmmTask extends TaskBase
         $movie->alt = '';
         $movie->subtype = '';
 
-        /** @var DOMQuery $detailQuery */
-        $detailQuery = $this->getDetailQuery('商品発売日', $dmmId, $detailTable);
-        $movie->pubdate = str_replace('/', '-', trim($detailQuery->text(), "\n "));
-        $movie->year = substr($movie->pubdate, 0, 4);
+        $detailQuery = $this->getDetailQuery('商品発売日：', $dmmId, $detailTable);
+        if (count($detailQuery) > 0) {
+            $movie->pubdate = str_replace('/', '-', trim($detailQuery->text(), "\n "));
+            $movie->year = substr($movie->pubdate, 0, 4);
+        }
         $movie->images = $imageLarge;
         $movie->previews = '';
-        $detailQuery = $this->getDetailQuery('シリーズ', $dmmId, $detailTable)->filter('a');
-        if ($detailQuery->length > 0) {
+        $detailQuery = $this->getDetailQuery('シリーズ：', $dmmId, $detailTable)->filter('a');
+        if (count($detailQuery) > 0) {
             $series = new Series();
-            if (preg_match('/id=(\d+)/', $detailQuery->attr('href'), $matches)) {
+            if (preg_match('/id=(\d+)/', $detailQuery->filter('a')->attr('href'), $matches)) {
                 $seriesId = $matches[1];
                 $series->id = CrawlDmmTask::dmmOtherIDConvert($seriesId);
                 $series->name = trim($detailQuery->text());
@@ -99,19 +100,19 @@ class ImportDmmTask extends TaskBase
             }
         }
 
-        $detailQuery = $this->getDetailQuery('メーカー', $dmmId, $detailTable);
-        if ($detailQuery->length > 0) {
+        $detailQuery = $this->getDetailQuery('メーカー：', $dmmId, $detailTable);
+        if (count($detailQuery) > 0) {
             $maker = new Makers();
-            if (preg_match('/id=(\d+)/', $detailQuery->attr('href'), $matches)) {
-                $maker->id = self::dmmOtherIDConvert($matches[1]);
+            if (preg_match('/id=(\d+)/', $detailQuery->filter('a')->attr('href'), $matches)) {
+                $maker->id = CrawlDmmTask::dmmOtherIDConvert($matches[1]);
                 $maker->name = trim($detailQuery->text());
                 $movie->maker = $maker;
             }
         }
 
-        $detailQuery = $this->getDetailQuery('出演者', $dmmId, $detailTable)->filter('a');
-        if ($detailQuery->length > 0) {
-            $casts = $this->processActress($this->getCasts());
+        $detailQuery = $this->getDetailQuery('出演者：', $dmmId, $detailTable)->filter('a');
+        if (count($detailQuery) > 0) {
+            $casts = $this->processActress($this->getCasts($detailQuery));
             $movie->casts = $casts;
         }
 
@@ -123,16 +124,16 @@ class ImportDmmTask extends TaskBase
     private function getCasts(Crawler $links)
     {
         $staffs = [];
-        foreach ($links as $link) {
+        $links->each(function (Crawler $link, $i) use (&$staffs) {
             if (!preg_match('/id=(\d+)/', $link->attr('href'), $matches)) {
-                continue;
+                return;
             }
 
             $staff = new Staffs();
-            $staff->id = self::dmmOtherIDConvert($matches[1]);
+            $staff->id = CrawlDmmTask::dmmOtherIDConvert($matches[1]);
             $staff->name = trim($link->text());
             $staffs[] = $staff;
-        }
+        });
         return $staffs;
     }
 
@@ -152,22 +153,25 @@ class ImportDmmTask extends TaskBase
         }
 
         $table = [];
-        $trArray = $queryTable->filter('tr');
-        foreach ($trArray as $row) {
-            $key = trim($row->filter('td')->eq(0)->text(), "： \n");
-            if (!$key) {
-                continue;
+        $queryTable->filter('tr')->each(function (Crawler $row, $i) use (&$table) {
+            $td = $row->filter('td');
+            if (count($td) < 2) {
+                return true;
             }
-            $table[$key] = $row->filter('td')->eq(1);
-        }
+            $key = trim($td->eq(0)->text(), " \n");
+            if (!$key) {
+                return true;
+            }
+            $table[$key] = $td->eq(1);
+        });
         return $this->currentTable = $table;
     }
 
     /**
      * @param $column
      * @param $dmmId
-     * @param DOMQuery $queryTable
-     * @return DOMQuery | null
+     * @param Crawler $queryTable
+     * @return Crawler | null
      */
     private function getDetailQuery($column, $dmmId, Crawler $queryTable)
     {

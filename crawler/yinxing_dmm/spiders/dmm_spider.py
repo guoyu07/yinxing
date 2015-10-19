@@ -17,28 +17,36 @@ class DmmSpider(CrawlSpider):
     name = "dmm"
     allowed_domains = ["www.dmm.co.jp", "affiliate-api.dmm.com"]
     start_urls = [
-        # "http://www.dmm.co.jp/digital/videoa/-/detail/=/cid=rki00344/"
-        "http://www.dmm.co.jp/digital/videoa/-/actress/=/keyword=a/"
-        # "http://www.dmm.co.jp/digital/videoa/-/list/=/sort=date/"
+        # enter by genre
+        "http://www.dmm.co.jp/digital/videoa/-/genre/=/display=syllabary/sort=ranking/",
+        "http://www.dmm.co.jp/digital/videoa/-/maker/",
+        "http://www.dmm.co.jp/digital/videoa/-/series/=/keyword=a/sort=ruby/",
+        "http://www.dmm.co.jp/digital/videoa/-/actress/=/keyword=a/",
     ]
 
     rules = (
-        # Actress List Page
-        Rule(LinkExtractor(allow=('digital/videoa/-/actress/=/keyword=\w+/(page=\d+/)*',), ), follow=True),
-        # Movie List page filtered by actress
-        Rule(LinkExtractor(allow='digital/videoa/-/list/=/article=actress/id=\d+/sort=ranking/(page=\d+/)*', ),
-             follow=True,
-             callback='parse_movie_id_from_list'),
-        # Movie detail page
+        # Enter pages
+        Rule(LinkExtractor(allow='digital/videoa/-/actress/=/keyword=\w+/(page=\d+/)*$', ), follow=True, ),
+        Rule(LinkExtractor(allow='digital/videoa/-/maker/=/keyword=\w+/(page=\d+/)*$', ), follow=True, ),
+        Rule(LinkExtractor(allow='digital/videoa/-/series/=/keyword=\w+/sort=ruby/(page=\d+/)*$', ), follow=True, ),
+        # List pages
+        Rule(LinkExtractor(
+            allow='digital/videoa/-/list/=/article=(actress|series|maker|keyword)/id=\d+/(page=\d+/)*$', ),
+             follow=True, ),
         Rule(LinkExtractor(allow='detail/=/cid=(\w+)/$', ),
-             follow=False,
+             follow=True,
              callback='download_movie_detail'),
     )
 
     def download_movie_detail(self, response):
         dmm_id = response.url.split('/')[-2].replace('cid=', '')
-        self.logger.debug("Download xml %s" % response.url)
-        with open(self.get_dl_html_file_path(dmm_id), 'wb') as f:
+        filepath = self.get_dl_html_file_path(dmm_id)
+        if os.path.exists(filepath):
+            self.logger.debug("Html %s already exists, skipped" % filepath)
+            return [YinxingDmmItem()]
+
+        self.logger.debug("Download html %s" % response.url)
+        with open(filepath, 'wb') as f:
             f.write(response.body)
         return [YinxingDmmItem()]
 
