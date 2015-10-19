@@ -12,6 +12,7 @@ namespace Eva\EvaMovieTests;
 use Eva\EvaMovie\Tasks\ImportDmmTask;
 use Phalcon\Di;
 use Eva\EvaEngine\Module\Manager as ModuleManager;
+use Phalcon\Db\Adapter\Pdo\Mysql;
 
 class DmmHtmlTest extends \PHPUnit_Framework_TestCase
 {
@@ -25,7 +26,7 @@ class DmmHtmlTest extends \PHPUnit_Framework_TestCase
         $this->task = new ImportDmmTask();
         $di = new Di\FactoryDefault();
         $db = function () {
-            return new \Phalcon\Db\Adapter\Pdo\Mysql(array(
+            return new Mysql(array(
                 "host" => $GLOBALS['db_host'],
                 "username" => $GLOBALS['db_username'],
                 "password" => $GLOBALS['db_password'],
@@ -37,6 +38,10 @@ class DmmHtmlTest extends \PHPUnit_Framework_TestCase
         $di->set('moduleManager', function () {
             return new ModuleManager();
         });
+
+        /** @var Mysql $mysql */
+        $mysql = $di->get('dbMaster');
+        $mysql->query(file_get_contents(__DIR__ . '/../../sql/evamovie_2015-10-20.sql'));
 
     }
 

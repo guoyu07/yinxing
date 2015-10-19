@@ -1,3 +1,10 @@
+# 银杏
+
+[![License](https://poser.pugx.org/AlloVince/yinxing/license.svg)](https://packagist.org/packages/AlloVince/yinxing)
+[![Build Status](https://travis-ci.org/AlloVince/yinxing.svg?branch=master)](https://travis-ci.org/AlloVince/yinxing)
+[![Coverage Status](https://coveralls.io/repos/AlloVince/yinxing/badge.png?branch=master)](https://coveralls.io/r/AlloVince/yinxing?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/AlloVince/yinxing/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/AlloVince/yinxing/?branch=master)
+
 ## ID规划
 
 ### Movie ID
