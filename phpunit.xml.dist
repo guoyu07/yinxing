@@ -2,7 +2,7 @@
     <php>
         <var name="db_host" value="localhost"/>
         <var name="db_username" value="root"/>
-        <var name="db_password" value=""/>
+        <var name="db_password" value="huaerjie001"/>
     </php>
     <testsuites>
         <testsuite name="EvaMovie Test">
@@ -10,11 +10,9 @@
         </testsuite>
     </testsuites>
     <filter>
-        <whitelist>
-            <exclude>
-                <directory>vendor/</directory>
-            </exclude>
-        </whitelist>
+        <blacklist>
+            <directory>./vendor/</directory>
+        </blacklist>
     </filter>
     <logging>
         <log type="coverage-clover" target="tmp/clover.xml"/>

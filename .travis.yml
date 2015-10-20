@@ -13,6 +13,7 @@ before_script:
   - composer install --dev --prefer-source
   - phpenv rehash
   - if [[ "$DB" == "mysql" ]]; then mysql -e "create database IF NOT EXISTS yinxing;" -uroot; fi
+  - if [[ "$DB" == "mysql" ]]; then echo "USE mysql;\nUPDATE user SET password=PASSWORD('huaerjie001') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root; fi
 
 script:
   phpunit -v
