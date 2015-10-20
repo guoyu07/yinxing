@@ -8,7 +8,7 @@ php:
 
 before_script:
   - git clone -b 2.0.x git://github.com/phalcon/cphalcon.git --depth=1 && cd cphalcon/build/ && ./install
-  - cd ../../../ && phpenv config-add ./tests/phalcon.ini
+  - cd ../../ && phpenv config-add ./tests/phalcon.ini
   - composer self-update
   - composer install --dev --prefer-source
   - phpenv rehash
