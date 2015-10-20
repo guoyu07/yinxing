@@ -18,9 +18,9 @@ use Eva\EvaMovie\Entities\Staffs;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\TransferException;
-use JpnForPhp\Transliterator\Romaji;
-use QueryPath\DOMQuery;
 use Symfony\Component\DomCrawler\Crawler;
+use Phalcon\Mvc\Model\Transaction\Manager as TranscationManager;
+
 
 class ImportDmmTask extends TaskBase
 {
@@ -64,7 +64,6 @@ class ImportDmmTask extends TaskBase
         $file = $source->openFile();
         /** @var Movies $movie */
         $movie = $this->getMovie($file->fread($file->getSize()));
-        var_dump($movie->toArray());
 
         if (!$movie) {
             return $this->output->writelnError(sprintf("Not found dmm id", $source->getFilename()));
@@ -72,7 +71,23 @@ class ImportDmmTask extends TaskBase
 
         $this->currentDmmId = $movie->banngo;
 
+        if (Movies::findFirstById($movie->id)) {
+            return $this->output->writelnWarning(sprintf("Movie %s already exists, insert skipped", $movie->banngo));
+        }
 
+        /** @var TranscationManager $tm */
+        $tm = $this->getDI()->get('transactions');
+        $transcation = $tm->get();
+        $movie->setTransaction($transcation);
+        if (false === $movie->save()) {
+            $transcation->rollback();
+            return $this->output->writelnError(sprintf(
+                "Movie saving failed by %s",
+                implode(',', $movie->getMessages())
+            ));
+        }
+        $transcation->commit();
+        $this->output->writelnSuccess(sprintf("Movie saving success", $movie->banngo));
     }
 
     public function getMovie($html)
@@ -156,8 +171,14 @@ class ImportDmmTask extends TaskBase
 
         $detailQuery = $this->getDetailQuery('出演者：', $dmmId, $detailTable)->filter('a');
         if (count($detailQuery) > 0) {
-            $casts = $this->processActress($this->getCasts($detailQuery));
-            $movie->casts = $casts;
+            $movie->casts = $this->processActress($this->getCasts($detailQuery));
+        }
+
+        $detailQuery = $this->getDetailQuery('監督：', $dmmId, $detailTable)->filter('a');
+        if (count($detailQuery) > 0) {
+            $directors = $this->processDirector($this->getCasts($detailQuery));
+            //Phalcon many to many will be convert to 1:1 if result set has only one result
+            $movie->directors = $directors;
         }
 
         $detailQuery = $this->getDetailQuery('ジャンル：', $dmmId, $detailTable)->filter('a');
@@ -166,7 +187,7 @@ class ImportDmmTask extends TaskBase
             $detailQuery->each(function (Crawler $link, $i) use (&$tags) {
                 $tags[] = trim($link->text());
             });
-            $movie->tags = $tags;
+            $movie->tags = implode(',', $tags);
         }
 
         return $movie;
@@ -181,17 +202,31 @@ class ImportDmmTask extends TaskBase
             }
 
             $staff = new Staffs();
-            $staff->id = CrawlDmmTask::dmmOtherIDConvert($matches[1]);
             $staff->name = trim($link->text());
+            $staff->id = $matches[1];
             $staffs[] = $staff;
         });
+
         return $staffs;
     }
 
     private function processActress($casts)
     {
+        /** @var Staffs $cast */
         foreach ($casts as $key => $cast) {
+            $cast->id = CrawlDmmTask::dmmOtherIDConvert($cast->id);
             $cast->gender = 'female';
+            $casts[$key] = $cast;
+        }
+        return $casts;
+    }
+
+    private function processDirector($casts)
+    {
+        /** @var Staffs $cast */
+        foreach ($casts as $key => $cast) {
+            $cast->id = CrawlDmmTask::dmmDirectorIDConvert($cast->id);
+            $cast->isDirector = 1;
             $casts[$key] = $cast;
         }
         return $casts;

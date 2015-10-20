@@ -161,6 +161,18 @@ trait DmmXmlTrait
      * @param $dmmId
      * @return int
      */
+    public static function dmmDirectorIDConvert($dmmId)
+    {
+        if (!is_numeric($dmmId)) {
+            return false;
+        }
+        return 2100000000 + (int)$dmmId;
+    }
+
+    /**
+     * @param $dmmId
+     * @return int
+     */
     public static function dmmOtherIDConvert($dmmId)
     {
         if (!is_numeric($dmmId)) {

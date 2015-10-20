@@ -57,8 +57,9 @@ class DmmHtmlTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('238', $movie->durations);
         $this->assertStringStartsWith('MOODYZ大人気ハード企画', $movie->summary);
 
-        $this->assertCount(9, $movie->tags);
-        $this->assertEquals('ハイビジョン', $movie->tags[0]);
+        $tags = explode(',', $movie->tags);
+        $this->assertCount(9, $tags);
+        $this->assertEquals('ハイビジョン', $tags[0]);
 
         $images = explode(',', $movie->images);
         $this->assertCount(3, $images);
@@ -75,9 +76,10 @@ class DmmHtmlTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2000001509, $movie->maker->id);
         $this->assertEquals('ムーディーズ', $movie->maker->name);
 
-        #$this->assertEquals(4, count($movie->casts));
-        #$this->assertEquals(2001012295, $movie->casts[0]->id);
-        #$this->assertEquals('枢木みかん', $movie->casts[0]->name);
+        $this->assertEquals(4, $movie->casts->count());
+
+        $this->assertEquals(1, $movie->directors->count());
+        $this->assertEquals(2100105001, $movie->directors[0]->id);
     }
 
     public function testNoActress()
@@ -89,6 +91,7 @@ class DmmHtmlTest extends \PHPUnit_Framework_TestCase
     public function testNoDirector()
     {
         $movie = $this->task->getMovie(file_get_contents(__DIR__ . '/_html/asfb00160.html'));
+        $this->assertEmpty($movie->directors);
     }
 
     public function testNoSeries()
