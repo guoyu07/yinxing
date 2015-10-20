@@ -79,8 +79,14 @@ class DmmHtmlTest extends \PHPUnit_Framework_TestCase
         //NOTE:Failed on travic-ci by 0
         //$this->assertEquals(4, $movie->casts->count());
 
-        $this->assertEquals(1, $movie->directors->count());
+        //$this->assertEquals(1, count($movie->directors));
         $this->assertEquals(2100105001, $movie->directors[0]->id);
+    }
+
+    public function testNoIdLink()
+    {
+        $movie = $this->task->getMovie(file_get_contents(__DIR__ . '/_html/12val00024.html'));
+        $this->assertEquals('12val00024', $movie->banngo);
     }
 
     public function testNoActress()

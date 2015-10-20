@@ -1,6 +1,11 @@
 <?php
 return [
     'movie' => [
+        'importer' => [
+            'dmm' => [
+                'htmlPath' => __DIR__ . '/',
+            ]
+        ],
         'crawl' => [
             'dmm' => [
                 'logPath' => __DIR__ . '/../tmp',

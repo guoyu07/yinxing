@@ -25,15 +25,15 @@ class CrawlTest extends \PHPUnit_Framework_TestCase
 
     public function testNameParse()
     {
-        list($name, $aka) = $this->crawl->parseNameAndAka('中野美奈');
+        list($name, $aka) = CrawlDmmTask::parseNameAndAka('中野美奈');
         $this->assertEquals('中野美奈', $name);
         $this->assertEquals([], $aka);
 
-        list($name, $aka) = $this->crawl->parseNameAndAka('酒井ちなみ（紫葵）');
+        list($name, $aka) = CrawlDmmTask::parseNameAndAka('酒井ちなみ（紫葵）');
         $this->assertEquals('酒井ちなみ', $name);
         $this->assertEquals(['紫葵'], $aka);
 
-        list($name, $aka) = $this->crawl->parseNameAndAka('黒木麻衣（花野真衣、SHIHO）');
+        list($name, $aka) = CrawlDmmTask::parseNameAndAka('黒木麻衣（花野真衣、SHIHO）');
         $this->assertEquals('黒木麻衣', $name);
         $this->assertEquals(['花野真衣', 'SHIHO'], $aka);
 

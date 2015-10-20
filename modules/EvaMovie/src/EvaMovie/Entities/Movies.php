@@ -108,7 +108,7 @@ class Movies extends BaseEntity
      *
      * @var integer
      */
-    public $ratingsCount;
+    public $ratingsCount = 0;
 
     /**
      *
@@ -120,7 +120,7 @@ class Movies extends BaseEntity
      *
      * @var integer
      */
-    public $wishCount;
+    public $wishCount = 0;
 
     /**
      *
@@ -132,7 +132,7 @@ class Movies extends BaseEntity
      *
      * @var integer
      */
-    public $collectCount;
+    public $collectCount = 0;
 
     /**
      *
@@ -144,7 +144,7 @@ class Movies extends BaseEntity
      *
      * @var integer
      */
-    public $doCount;
+    public $doCount = 0;
 
     /**
      *
@@ -264,7 +264,7 @@ class Movies extends BaseEntity
      *
      * @var integer
      */
-    public $seasonsCount;
+    public $seasonsCount = 0;
 
     /**
      *
@@ -276,7 +276,7 @@ class Movies extends BaseEntity
      *
      * @var integer
      */
-    public $currentSeason;
+    public $currentSeason = 0;
 
     /**
      *
@@ -300,7 +300,7 @@ class Movies extends BaseEntity
      *
      * @var integer
      */
-    public $episodesCount;
+    public $episodesCount = 0;
 
     /**
      *
@@ -312,7 +312,7 @@ class Movies extends BaseEntity
      *
      * @var integer
      */
-    public $makerId;
+    public $makerId = 0;
 
     /**
      *
@@ -324,7 +324,7 @@ class Movies extends BaseEntity
      *
      * @var integer
      */
-    public $seriesId;
+    public $seriesId = 0;
 
     /**
      *

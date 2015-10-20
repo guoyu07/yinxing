@@ -19,7 +19,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\TransferException;
 use Symfony\Component\DomCrawler\Crawler;
-use Phalcon\Mvc\Model\Transaction\Manager as TranscationManager;
+use Phalcon\Db\Adapter\Pdo\Mysql;
 
 
 class ImportDmmTask extends TaskBase
@@ -35,16 +35,18 @@ class ImportDmmTask extends TaskBase
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
-    public function mainAction()
+    public function mainAction(array $args)
     {
         if (PHP_INT_SIZE === 4) {
             return $this->output->writelnError("Require PHP 64bit to run this script by CRC32 issue");
         }
         $this->output->writelnInfo("Importer started.");
 
+        $banngo = isset($args[0]) ? $args[0] : '*';
+
         $fileCount = 0;
-        $root = '/opt/htdocs/yinxing/modules/EvaMovie/tests/EvaMovieTests';
-        $files = new \GlobIterator($root . '/_html/mird00143.html');
+        $root = $this->getDI()->get('config')->movie->importer->dmm->htmlPath;
+        $files = new \GlobIterator($root . "/$banngo.html");
         /** @var \SplFileInfo $file */
         foreach ($files as $file) {
             $this->importSingleMovie($file);
@@ -53,6 +55,7 @@ class ImportDmmTask extends TaskBase
 
         $this->output->writelnSuccess(sprintf("Import process finished, %d file imported", $fileCount));
     }
+
 
     public function importSingleMovie(\SplFileInfo $source)
     {
@@ -63,7 +66,7 @@ class ImportDmmTask extends TaskBase
 
         $file = $source->openFile();
         /** @var Movies $movie */
-        $movie = $this->getMovie($file->fread($file->getSize()));
+        $movie = $this->getMovie($file->fread($file->getSize()), $file->getBasename('.html'));
 
         if (!$movie) {
             return $this->output->writelnError(sprintf("Not found dmm id", $source->getFilename()));
@@ -75,27 +78,43 @@ class ImportDmmTask extends TaskBase
             return $this->output->writelnWarning(sprintf("Movie %s already exists, insert skipped", $movie->banngo));
         }
 
-        /** @var TranscationManager $tm */
-        $tm = $this->getDI()->get('transactions');
-        $transcation = $tm->get();
-        $movie->setTransaction($transcation);
+        /** @var Mysql $db */
+        //$db = $this->getDI()->get('dbMaster');
+        //$db->begin();
+
         if (false === $movie->save()) {
-            $transcation->rollback();
+            //$db->rollback();
             return $this->output->writelnError(sprintf(
                 "Movie saving failed by %s",
                 implode(',', $movie->getMessages())
             ));
         }
-        $transcation->commit();
-        $this->output->writelnSuccess(sprintf("Movie saving success", $movie->banngo));
+        //$db->commit();
+        $this->output->writelnSuccess(sprintf(
+            "Movie %s saving success as %s, detail: %s",
+            $movie->banngo,
+            $movie->id,
+            ''
+            //json_encode($movie, JSON_UNESCAPED_UNICODE)
+        ));
     }
 
-    public function getMovie($html)
+    public function getMovie($html, $urlId = '')
     {
         $domCrawler = new Crawler();
         $movie = new Movies();
         $domCrawler->addContent($html);
-        $dmmId = $domCrawler->filter("#sample-video > a")->eq(0)->attr("id");
+        $idQuery = $domCrawler->filter("#sample-video > a");
+        $dmmId = '';
+        if (count($idQuery) > 0) {
+            $dmmId = $idQuery->first()->attr('id');
+        } else {
+            $idQuery = $domCrawler->filter("#sample-video > img");
+            if (count($idQuery) > 0) {
+                $dmmId = $idQuery->first()->attr('id');
+                $dmmId = str_replace('package-src-', '', $dmmId);
+            }
+        }
         if (!$dmmId) {
             return;
         }
@@ -104,14 +123,23 @@ class ImportDmmTask extends TaskBase
         $movie->title = $domCrawler->filter(".page-detail #title")->text();
         $detailTable = $domCrawler->filter(".page-detail table.mg-b20");
         $movie->banngo = $dmmId;
-        $movie->subBanngo = $dmmId;
-        $movie->alt = "http://www.dmm.co.jp/digital/videoa/-/detail/=/cid=$dmmId/";
-        $movie->subtype = '';
+        $urlId = $urlId ?: $dmmId;
+        $movie->subBanngo = $urlId;
+        $movie->alt = "http://www.dmm.co.jp/digital/videoa/-/detail/=/cid=$urlId/";
+        $movie->subtype = 'video';
 
         $detailQuery = $this->getDetailQuery('商品発売日：', $dmmId, $detailTable);
         if (count($detailQuery) > 0) {
             $movie->pubdate = str_replace('/', '-', trim($detailQuery->text(), "\n "));
             $movie->year = substr($movie->pubdate, 0, 4);
+        }
+
+        if ($movie->pubdate == '----') {
+            $detailQuery = $this->getDetailQuery('配信開始日：', $dmmId, $detailTable);
+            if (count($detailQuery) > 0) {
+                $movie->pubdate = str_replace('/', '-', trim($detailQuery->text(), "\n "));
+                $movie->year = substr($movie->pubdate, 0, 4);
+            }
         }
 
         $detailQuery = $this->getDetailQuery('収録時間：', $dmmId, $detailTable);
@@ -177,7 +205,6 @@ class ImportDmmTask extends TaskBase
         $detailQuery = $this->getDetailQuery('監督：', $dmmId, $detailTable)->filter('a');
         if (count($detailQuery) > 0) {
             $directors = $this->processDirector($this->getCasts($detailQuery));
-            //Phalcon many to many will be convert to 1:1 if result set has only one result
             $movie->directors = $directors;
         }
 
@@ -202,7 +229,9 @@ class ImportDmmTask extends TaskBase
             }
 
             $staff = new Staffs();
-            $staff->name = trim($link->text());
+            list($name, $aka) = CrawlDmmTask::parseNameAndAka(trim($link->text()));
+            $staff->name = $name;
+            $staff->aka = $aka ? implode(',', $aka) : null;
             $staff->id = $matches[1];
             $staffs[] = $staff;
         });
@@ -234,7 +263,7 @@ class ImportDmmTask extends TaskBase
 
     private function parseTable($dmmId, Crawler $queryTable)
     {
-        if ($dmmId = $this->currentDmmId && $this->currentTable) {
+        if ($dmmId == $this->currentDmmId && $this->currentTable) {
             return $this->currentTable;
         }
 

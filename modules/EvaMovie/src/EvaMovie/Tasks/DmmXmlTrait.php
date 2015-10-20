@@ -185,7 +185,7 @@ trait DmmXmlTrait
      * @param $name
      * @return array
      */
-    public function parseNameAndAka($name)
+    public static function parseNameAndAka($name)
     {
         //array_filter to remove empty strings
         $nameArray = array_filter(preg_split("/（|、|）/", $name));
@@ -236,12 +236,12 @@ trait DmmXmlTrait
             }
             $staff = new Staffs();
             $staff->id = self::dmmOtherIDConvert($person->id);
-            list($name, $aka) = $this->parseNameAndAka($person->name);
+            list($name, $aka) = self::parseNameAndAka($person->name);
             $staff->name = $name;
             $staff->aka = implode(',', $aka) ?: null;
             $nameRuby = $this->findNameRuby($person->id, $people);
             if ($nameRuby) {
-                list($name, $aka) = $this->parseNameAndAka($nameRuby);
+                list($name, $aka) = self::parseNameAndAka($nameRuby);
                 $staff->nameRuby = $name;
                 $staff->nameEn = $this->getRomajiConvertor()->transliterate($name);
                 $staff->akaRuby = implode(',', $aka);
