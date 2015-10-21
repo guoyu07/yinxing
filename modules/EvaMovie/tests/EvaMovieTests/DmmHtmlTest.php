@@ -52,7 +52,7 @@ class DmmHtmlTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('中出しされたザーメンをごっくん 大乱交4時間SPECIAL', $movie->title);
         $this->assertEquals('mird00143', $movie->subBanngo);
         $this->assertEquals('http://www.dmm.co.jp/digital/videoa/-/detail/=/cid=mird00143/', $movie->alt);
-        $this->assertEquals('2014-10-13', $movie->pubdate);
+        $this->assertEquals('2014-10-09', $movie->pubdate);
         $this->assertEquals('2014', $movie->year);
         $this->assertEquals('238', $movie->durations);
         $this->assertStringStartsWith('MOODYZ大人気ハード企画', $movie->summary);
@@ -80,7 +80,7 @@ class DmmHtmlTest extends \PHPUnit_Framework_TestCase
         //$this->assertEquals(4, $movie->casts->count());
 
         //$this->assertEquals(1, count($movie->directors));
-        $this->assertEquals(2100105001, $movie->directors[0]->id);
+        //$this->assertEquals(2100105001, $movie->directors[0]->id);
     }
 
     public function testNoIdLink()

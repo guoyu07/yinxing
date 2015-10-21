@@ -18,6 +18,8 @@ use Eva\EvaMovie\Entities\Staffs;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\TransferException;
+use HTMLPurifier;
+use HTMLPurifier_Config;
 use Symfony\Component\DomCrawler\Crawler;
 use Phalcon\Db\Adapter\Pdo\Mysql;
 
@@ -79,17 +81,17 @@ class ImportDmmTask extends TaskBase
         }
 
         /** @var Mysql $db */
-        //$db = $this->getDI()->get('dbMaster');
-        //$db->begin();
+        $db = $this->getDI()->get('dbMaster');
+        $db->begin();
 
         if (false === $movie->save()) {
-            //$db->rollback();
+            $db->rollback();
             return $this->output->writelnError(sprintf(
                 "Movie saving failed by %s",
                 implode(',', $movie->getMessages())
             ));
         }
-        //$db->commit();
+        $db->commit();
         $this->output->writelnSuccess(sprintf(
             "Movie %s saving success as %s, detail: %s",
             $movie->banngo,
@@ -128,15 +130,16 @@ class ImportDmmTask extends TaskBase
         $movie->alt = "http://www.dmm.co.jp/digital/videoa/-/detail/=/cid=$urlId/";
         $movie->subtype = 'video';
 
-        $detailQuery = $this->getDetailQuery('商品発売日：', $dmmId, $detailTable);
+        $detailQuery = $this->getDetailQuery('配信開始日：', $dmmId, $detailTable);
         if (count($detailQuery) > 0) {
             $movie->pubdate = str_replace('/', '-', trim($detailQuery->text(), "\n "));
             $movie->year = substr($movie->pubdate, 0, 4);
         }
 
         if ($movie->pubdate == '----') {
-            $detailQuery = $this->getDetailQuery('配信開始日：', $dmmId, $detailTable);
+            $detailQuery = $this->getDetailQuery('商品発売日：', $dmmId, $detailTable);
             if (count($detailQuery) > 0) {
+                var_dump(1);
                 $movie->pubdate = str_replace('/', '-', trim($detailQuery->text(), "\n "));
                 $movie->year = substr($movie->pubdate, 0, 4);
             }
@@ -266,18 +269,22 @@ class ImportDmmTask extends TaskBase
         if ($dmmId == $this->currentDmmId && $this->currentTable) {
             return $this->currentTable;
         }
-
         $table = [];
-        $queryTable->filter('tr')->each(function (Crawler $row, $i) use (&$table) {
-            $td = $row->filter('td');
-            if (count($td) < 2) {
-                return true;
+        $lastKey = '';
+        //Filter all td, not use tr, beacuse some pages have no matching html tags such as <tr><tr>...<td>
+        $queryTable->filter('td')->each(function (Crawler $td, $i) use (&$table, &$lastKey) {
+            if ($i % 2 === 0) {
+                $key = trim($td->text(), " \n");
+                if (!$key) {
+                    $lastKey = '';
+                    return true;
+                }
+                $lastKey = $key;
+            } else {
+                if ($lastKey) {
+                    $table[$lastKey] = $td;
+                }
             }
-            $key = trim($td->eq(0)->text(), " \n");
-            if (!$key) {
-                return true;
-            }
-            $table[$key] = $td->eq(1);
         });
         return $this->currentTable = $table;
     }
