@@ -85,12 +85,22 @@ class DmmHtmlTest extends \PHPUnit_Framework_TestCase
 
     public function testBanngoConvert()
     {
+        $this->assertEquals('foobar', ImportDmmTask::dmmIdToBanngo('foobar'));
+
         $this->assertEquals('abcd004', ImportDmmTask::dmmIdToBanngo('104abcd00004'));
         $this->assertEquals('wofp01', ImportDmmTask::dmmIdToBanngo('10wofp0001s'));
         $this->assertEquals('svdvd124', ImportDmmTask::dmmIdToBanngo('1svdvd00124'));
         $this->assertEquals('aldmg212', ImportDmmTask::dmmIdToBanngo('b149aldmg00212'));
+        $this->assertEquals('jpdrs01761', ImportDmmTask::dmmIdToBanngo('1jpdrs01761'));
         $this->assertEquals('atfb285', ImportDmmTask::dmmIdToBanngo('atfb00285'));
         $this->assertEquals('nfdm375', ImportDmmTask::dmmIdToBanngo('h_188nfdm00375'));
+
+
+        $this->assertEquals('c01110', ImportDmmTask::dmmIdToBanngo('140c01110'));
+        $this->assertEquals('180_01904', ImportDmmTask::dmmIdToBanngo('180_01904'));
+        $this->assertEquals('acdv01001', ImportDmmTask::dmmIdToBanngo('148acdv01001'));
+        $this->assertEquals('sd01026', ImportDmmTask::dmmIdToBanngo('165sd01026'));
+        //$this->assertEquals('d1clymax011', ImportDmmTask::dmmIdToBanngo('189d1clymax00011'));
     }
 
     public function testDifferentBanngo()

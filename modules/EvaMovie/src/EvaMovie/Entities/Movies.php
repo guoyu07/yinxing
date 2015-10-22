@@ -8,7 +8,8 @@ use Swagger\Annotations as SWG;
 /**
  * Class Movies
  *
- * @package Eva\EvaMovie\Entities *
+ * @package Eva\EvaMovie\Entities
+ *
  * @SWG\Model(id="Eva\EvaMovie\Entities\Movies")
  *
  */
@@ -48,7 +49,7 @@ class Movies extends BaseEntity
      *
      * @var string
      */
-    public $banngo;
+    public $banngo = '';
 
     /**
      *
@@ -174,11 +175,11 @@ class Movies extends BaseEntity
      *
      * @SWG\Property(
      *   name="pubdate",
-     *   type="string",
+     *   type="date",
      *   description="上映日期"
      * )
      *
-     * @var string
+     * @var date
      */
     public $pubdate;
 
@@ -186,11 +187,11 @@ class Movies extends BaseEntity
      *
      * @SWG\Property(
      *   name="year",
-     *   type="integer",
+     *   type="string",
      *   description="年代"
      * )
      *
-     * @var integer
+     * @var string
      */
     public $year;
 
@@ -357,7 +358,6 @@ class Movies extends BaseEntity
      */
     protected $tableName = 'movie_movies';
 
-
     public function initialize()
     {
         $this->belongsTo(
@@ -413,5 +413,4 @@ class Movies extends BaseEntity
         );
         parent::initialize();
     }
-
 }

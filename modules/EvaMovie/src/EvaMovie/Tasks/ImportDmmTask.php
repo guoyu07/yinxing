@@ -114,6 +114,7 @@ class ImportDmmTask extends TaskBase
             if (strlen($number) > 3 && Text::startsWith($number, '00')) {
                 return $digits . substr($number, 2);
             }
+            return $digits . $number;
         }
         return $dmmId;
     }
@@ -318,5 +319,6 @@ class ImportDmmTask extends TaskBase
         if (isset($table[$column])) {
             return $table[$column];
         }
+        return new Crawler();
     }
 }
