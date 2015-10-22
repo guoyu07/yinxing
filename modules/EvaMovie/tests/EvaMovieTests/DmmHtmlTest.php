@@ -83,6 +83,13 @@ class DmmHtmlTest extends \PHPUnit_Framework_TestCase
         //$this->assertEquals(2100105001, $movie->directors[0]->id);
     }
 
+    public function testDifferentBanngo()
+    {
+        $movie = $this->task->getMovie(file_get_contents(__DIR__ . '/_html/13ys36.html'));
+        $this->assertEquals('13ys36', $movie->banngo);
+        $this->assertEquals('13gqd00143', $movie->subBanngo);
+    }
+
     public function testNoIdLink()
     {
         $movie = $this->task->getMovie(file_get_contents(__DIR__ . '/_html/12val00024.html'));

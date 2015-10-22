@@ -18,8 +18,6 @@ use Eva\EvaMovie\Entities\Staffs;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\TransferException;
-use HTMLPurifier;
-use HTMLPurifier_Config;
 use Symfony\Component\DomCrawler\Crawler;
 use Phalcon\Db\Adapter\Pdo\Mysql;
 
@@ -96,40 +94,41 @@ class ImportDmmTask extends TaskBase
             "Movie %s saving success as %s, detail: %s",
             $movie->banngo,
             $movie->id,
-            ''
-            //json_encode($movie, JSON_UNESCAPED_UNICODE)
+            '' //json_encode($movie, JSON_UNESCAPED_UNICODE)
         ));
     }
 
-    public function getMovie($html, $urlId = '')
+    public function dmmIdToBanngo($dmmId)
+    {
+        return $dmmId;
+    }
+
+    public function getMovie($html)
     {
         $domCrawler = new Crawler();
         $movie = new Movies();
         $domCrawler->addContent($html);
-        $idQuery = $domCrawler->filter("#sample-video > a");
-        $dmmId = '';
-        if (count($idQuery) > 0) {
-            $dmmId = $idQuery->first()->attr('id');
-        } else {
-            $idQuery = $domCrawler->filter("#sample-video > img");
-            if (count($idQuery) > 0) {
-                $dmmId = $idQuery->first()->attr('id');
-                $dmmId = str_replace('package-src-', '', $dmmId);
-            }
-        }
+        $metaQuery = $domCrawler->filter('meta[property="og:url"]');
+        $url = count($metaQuery) > 0 ? $metaQuery->attr('content') : '';
+        $dmmId = $url ? array_slice(explode('/', $url), -2, 1)[0] : null;
+        $dmmId = $dmmId ? str_replace('cid=', '', $dmmId) : null;
         if (!$dmmId) {
             return;
         }
 
         $movie->id = CrawlDmmTask::dmmMovieIDToYinxingID($dmmId);
-        $movie->title = $domCrawler->filter(".page-detail #title")->text();
-        $detailTable = $domCrawler->filter(".page-detail table.mg-b20");
-        $movie->banngo = $dmmId;
-        $urlId = $urlId ?: $dmmId;
-        $movie->subBanngo = $urlId;
-        $movie->alt = "http://www.dmm.co.jp/digital/videoa/-/detail/=/cid=$urlId/";
+        $metaQuery = $domCrawler->filter('meta[property="og:title"]');
+        $movie->title = count($metaQuery) > 0 ? $metaQuery->attr('content') : null;
+
+        $imageQuery = $domCrawler->filter('meta[property="og:image"]');
+        $image = count($imageQuery) > 0 ? $imageQuery->attr('content') : '';
+        $subBanngo = $image ? array_slice(explode('/', $image), -2, 1)[0] : null;
+        $movie->banngo = $this->dmmIdToBanngo($dmmId);
+        $movie->subBanngo = $subBanngo;
+        $movie->alt = $url;
         $movie->subtype = 'video';
 
+        $detailTable = $domCrawler->filter(".page-detail table.mg-b20");
         $detailQuery = $this->getDetailQuery('配信開始日：', $dmmId, $detailTable);
         if (count($detailQuery) > 0) {
             $movie->pubdate = str_replace('/', '-', trim($detailQuery->text(), "\n "));
