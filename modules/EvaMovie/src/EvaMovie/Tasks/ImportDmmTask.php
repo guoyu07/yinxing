@@ -18,6 +18,7 @@ use Eva\EvaMovie\Entities\Staffs;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\TransferException;
+use Phalcon\Text;
 use Symfony\Component\DomCrawler\Crawler;
 use Phalcon\Db\Adapter\Pdo\Mysql;
 
@@ -98,11 +99,29 @@ class ImportDmmTask extends TaskBase
         ));
     }
 
-    public function dmmIdToBanngo($dmmId)
+    /**
+     * @param $dmmId
+     * @return string
+     */
+    public static function dmmIdToBanngo($dmmId)
     {
+        //Normal banngo with prefix
+        if (preg_match('/^[a-z]*_*\d+([a-z]+)(\d+)[a-z]*$/', $dmmId, $matches) ||
+            preg_match('/^([a-z]+)(\d+)$/', $dmmId, $matches)
+        ) {
+            $digits = $matches[1];
+            $number = $matches[2];
+            if (strlen($number) > 3 && Text::startsWith($number, '00')) {
+                return $digits . substr($number, 2);
+            }
+        }
         return $dmmId;
     }
 
+    /**
+     * @param $html
+     * @return Movies | null
+     */
     public function getMovie($html)
     {
         $domCrawler = new Crawler();
@@ -123,7 +142,7 @@ class ImportDmmTask extends TaskBase
         $imageQuery = $domCrawler->filter('meta[property="og:image"]');
         $image = count($imageQuery) > 0 ? $imageQuery->attr('content') : '';
         $subBanngo = $image ? array_slice(explode('/', $image), -2, 1)[0] : null;
-        $movie->banngo = $this->dmmIdToBanngo($dmmId);
+        $movie->banngo = self::dmmIdToBanngo($subBanngo);
         $movie->subBanngo = $subBanngo;
         $movie->alt = $url;
         $movie->subtype = 'video';
@@ -138,7 +157,6 @@ class ImportDmmTask extends TaskBase
         if ($movie->pubdate == '----') {
             $detailQuery = $this->getDetailQuery('商品発売日：', $dmmId, $detailTable);
             if (count($detailQuery) > 0) {
-                var_dump(1);
                 $movie->pubdate = str_replace('/', '-', trim($detailQuery->text(), "\n "));
                 $movie->year = substr($movie->pubdate, 0, 4);
             }

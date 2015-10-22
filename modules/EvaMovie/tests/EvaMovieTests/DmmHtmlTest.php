@@ -83,17 +83,27 @@ class DmmHtmlTest extends \PHPUnit_Framework_TestCase
         //$this->assertEquals(2100105001, $movie->directors[0]->id);
     }
 
+    public function testBanngoConvert()
+    {
+        $this->assertEquals('abcd004', ImportDmmTask::dmmIdToBanngo('104abcd00004'));
+        $this->assertEquals('wofp01', ImportDmmTask::dmmIdToBanngo('10wofp0001s'));
+        $this->assertEquals('svdvd124', ImportDmmTask::dmmIdToBanngo('1svdvd00124'));
+        $this->assertEquals('aldmg212', ImportDmmTask::dmmIdToBanngo('b149aldmg00212'));
+        $this->assertEquals('atfb285', ImportDmmTask::dmmIdToBanngo('atfb00285'));
+        $this->assertEquals('nfdm375', ImportDmmTask::dmmIdToBanngo('h_188nfdm00375'));
+    }
+
     public function testDifferentBanngo()
     {
         $movie = $this->task->getMovie(file_get_contents(__DIR__ . '/_html/13ys36.html'));
-        $this->assertEquals('13ys36', $movie->banngo);
+        $this->assertEquals('gqd143', $movie->banngo);
         $this->assertEquals('13gqd00143', $movie->subBanngo);
     }
 
     public function testNoIdLink()
     {
         $movie = $this->task->getMovie(file_get_contents(__DIR__ . '/_html/12val00024.html'));
-        $this->assertEquals('12val00024', $movie->banngo);
+        $this->assertEquals('val024', $movie->banngo);
     }
 
     public function testNoActress()
