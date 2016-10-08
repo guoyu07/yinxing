@@ -2,7 +2,7 @@
 import os
 import re
 import urllib
-import urlparse
+from urllib.parse import urlunparse, urlencode
 from scrapy import Request
 from scrapy.conf import settings
 
@@ -26,14 +26,14 @@ class DmmSpider(CrawlSpider):
 
     rules = (
         # Enter pages
-        Rule(LinkExtractor(allow='digital/videoa/-/actress/=/keyword=\w+/(page=\d+/)*$', ), follow=True, ),
-        Rule(LinkExtractor(allow='digital/videoa/-/maker/=/keyword=\w+/(page=\d+/)*$', ), follow=True, ),
-        Rule(LinkExtractor(allow='digital/videoa/-/series/=/keyword=\w+/sort=ruby/(page=\d+/)*$', ), follow=True, ),
+        Rule(LinkExtractor(allow='digital/\w+/-/actress/=/keyword=\w+/(page=\d+/)*$', ), follow=True, ),
+        Rule(LinkExtractor(allow='digital/\w+/-/maker/=/keyword=\w+/(page=\d+/)*$', ), follow=True, ),
+        Rule(LinkExtractor(allow='digital/\w+/-/series/=/keyword=\w+/sort=ruby/(page=\d+/)*$', ), follow=True, ),
         # List pages
         Rule(LinkExtractor(
             allow='digital/videoa/-/list/=/article=(actress|series|maker|keyword)/id=\d+/(page=\d+/)*$', ),
             follow=True, ),
-        Rule(LinkExtractor(allow='detail/=/cid=(\w+)/$', ),
+        Rule(LinkExtractor(allow='digital/\w+/-/detail/=/cid=(\w+)/$', ),
              follow=True,
              callback='download_movie_detail'),
     )
@@ -63,7 +63,7 @@ class DmmSpider(CrawlSpider):
             'hits': '100',
             'keyword': dmm_id
         }
-        return urlparse.urlunparse(('http', 'affiliate-api.dmm.com', '/', '', urllib.urlencode(params), ''))
+        return urlunparse(('http', 'affiliate-api.dmm.com', '/', '', urlencode(params), ''))
 
     def get_dl_html_file_path(self, dmm_id):
         return '%s/html_all/%s.html' % (settings['YINXING_DMM_DL_ROOT'], dmm_id)
